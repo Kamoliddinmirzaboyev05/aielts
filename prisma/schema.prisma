@@ -1,0 +1,60 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// enum Role {
+//   USER
+//   ADMIN
+// }
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  password  String
+  fullName  String
+  role      String    @default("USER")
+  attempts  Attempt[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Test {
+  id          String    @id @default(uuid())
+  title       String
+  type        String    // READING, LISTENING, WRITING, SPEAKING
+  content     String?   // Questions and passages (JSON string)
+  audioUrl    String?   // For Listening
+  attempts    Attempt[]
+  createdBy   String
+  createdAt   DateTime  @default(now())
+}
+
+model Attempt {
+  id        String    @id @default(uuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  testId    String
+  test      Test      @relation(fields: [testId], references: [id])
+  score     Float?
+  answers   String?   // JSON string
+  feedback  Feedback?
+  createdAt DateTime  @default(now())
+}
+
+model Feedback {
+  id            String   @id @default(uuid())
+  attemptId     String   @unique
+  attempt       Attempt  @relation(fields: [attemptId], references: [id])
+  overallBand   Float
+  taskResponse  String
+  coherence     String
+  lexical       String
+  grammar       String
+  modelAnswer   String?
+  createdAt     DateTime @default(now())
+}
